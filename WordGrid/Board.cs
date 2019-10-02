@@ -16,35 +16,32 @@ namespace WordGrid
         public int Size { get; }
 
         /// <summary>
-        /// Gets the character at the specified row and column in the board.
+        /// Gets or Sets the character at the specified row and column in the board.
         /// </summary>
         /// <param name="i">The row of the character to get.</param>
         /// <param name="j">The column of the character to get.</param>
         /// <returns></returns>
-        public char this[int i, int j] => _rows[i][j];
+        public char this[int i, int j]
+        {
+            get => _chars[i, j];
+            set => SetCell(i, j, value);
+        }
 
         /// <summary>
         /// Gets the board's rows.
         /// </summary>
-        public IReadOnlyList<string> Rows => _rows;
+        public IEnumerable<string> Rows => Enumerable.Range(0, Size)
+            .Select(i => string.Concat(Enumerable.Range(0, Size).Select(j => _chars[i, j])));
 
         /// <summary>
         /// Gets the board's columns.
         /// </summary>
-        public IReadOnlyList<string> Columns
-        {
-            get
-            {
-                UpdateProperties();
-                return _columns;
-            }
-        }
+        public IEnumerable<string> Columns => Enumerable.Range(0, Size)
+            .Select(i => string.Concat(Enumerable.Range(0, Size).Select(j => _chars[j, i])));
 
-        private readonly string[] _rows;
-        private readonly string[] _columns;
-        private readonly List<SortedList<int, char>> _rowConstraints;
-        private readonly List<SortedList<int, char>> _columnConstraints;
-        private bool _isUpToDate;
+        private readonly char[,] _chars;
+        private readonly Dictionary<int, char>[] _rowConstraints;
+        private readonly Dictionary<int, char>[] _columnConstraints;
         
         /// <summary>
         /// Constructor.
@@ -53,20 +50,9 @@ namespace WordGrid
         public Board(int size)
         {
             Size = size;
-            _rows = new string[size];
-            _columns = new string[size];
-            _rowConstraints = new List<SortedList<int, char>>();
-            _columnConstraints = new List<SortedList<int, char>>();
-
-            var blankRow = string.Concat(Enumerable.Range(0, size).Select(_ => ' '));
-            for (var i = 0; i < size; ++i)
-            {
-                _rows[i] = blankRow;
-                _columns[i] = blankRow;
-                _rowConstraints.Add(new SortedList<int, char>());
-                _columnConstraints.Add(new SortedList<int, char>());
-            }
-            _isUpToDate = true;
+            _chars = new char[Size, Size];
+            _rowConstraints = Enumerable.Range(0, Size).Select(_ => new Dictionary<int, char>()).ToArray();
+            _columnConstraints = Enumerable.Range(0, Size).Select(_ => new Dictionary<int, char>()).ToArray();
         }
 
         /// <summary>
@@ -76,22 +62,22 @@ namespace WordGrid
         public Board(IReadOnlyList<string> rows)
         {
             Size = rows.Count;
-            _rows = new string[Size];
-            _columns = new string[Size];
-            _rowConstraints = new List<SortedList<int, char>>();
-            _columnConstraints = new List<SortedList<int, char>>();
-
+            _chars = new char[Size, Size];
+            _rowConstraints = new Dictionary<int, char>[Size];
+            _columnConstraints = new Dictionary<int, char>[Size];
             for (var i = 0; i < Size; ++i)
             {
                 if (rows[i].Length != Size)
                 {
                     throw new ArgumentOutOfRangeException(nameof(rows), "All rows and columns must be the same size");
                 }
-                _rows[i] = rows[i];
-                _rowConstraints.Add(new SortedList<int, char>());
-                _columnConstraints.Add(new SortedList<int, char>());
+                for (var j = 0; j < Size; ++j)
+                {
+                    _chars[i, j] = rows[i][j];
+                }
+                _rowConstraints[i] = new Dictionary<int, char>();
+                _columnConstraints[i] = new Dictionary<int, char>();
             }
-            UpdateProperties();
         }
 
         /// <summary>
@@ -101,11 +87,9 @@ namespace WordGrid
         public Board(Board other)
         {
             Size = other.Size;
-            _rows = other._rows.ToArray();
-            _columns = other._columns.ToArray();
-            _rowConstraints = other._rowConstraints.Select(x => new SortedList<int, char>(x)).ToList();
-            _columnConstraints = other._columnConstraints.Select(x => new SortedList<int, char>(x)).ToList();
-            _isUpToDate = other._isUpToDate;
+            Array.Copy(other._chars, _chars, _chars.Length);
+            _rowConstraints = other._rowConstraints.Select(x => new Dictionary<int, char>(x)).ToArray();
+            _columnConstraints = other._columnConstraints.Select(x => new Dictionary<int, char>(x)).ToArray();
         }
 
         /// <summary>
@@ -118,18 +102,42 @@ namespace WordGrid
         }
 
         /// <summary>
+        /// Set the character in a specific cell of the board.
+        /// </summary>
+        /// <param name="row">The index of the row to set.</param>
+        /// <param name="column">The index of the column to set.</param>
+        /// <param name="c">The character to set in the cell at the given indices.</param>
+        public void SetCell(int row, int column, char c)
+        {
+            c = char.ToLowerInvariant(c);
+            if (row < 0 || row >= Size) throw new IndexOutOfRangeException(nameof(row));
+            if (column < 0 || column >= Size) throw new IndexOutOfRangeException(nameof(column));
+            if (c != ' ' && (c < 'a' || c > 'z')) throw new ArgumentOutOfRangeException(nameof(c));
+
+            _chars[row, column] = c;
+            if (c == ' ')
+            {
+                _rowConstraints[row].Remove(column);
+                _columnConstraints[column].Remove(row);
+            }
+            else
+            {
+                _rowConstraints[row][column] = c;
+                _columnConstraints[column][row] = c;
+            }
+        }
+
+        /// <summary>
         /// Set the text of the row at the given index.
         /// </summary>
         /// <param name="index">The index of the row to set.</param>
         /// <param name="word">The word to put in the row.</param>
         public void SetRow(int index, string word)
         {
-            if (word.Length != Size)
+            for (var i = 0; i < word.Length; ++i)
             {
-                throw new ArgumentOutOfRangeException(nameof(word), $"Word must be {Size} characters long");
+                SetCell(index, i, word[i]);
             }
-            _rows[index] = word;
-            _isUpToDate = false;
         }
 
         /// <summary>
@@ -139,15 +147,10 @@ namespace WordGrid
         /// <param name="word">The word to put in the column.</param>
         public void SetColumn(int index, string word)
         {
-            if (word.Length != Size)
+            for (var i = 0; i < word.Length; ++i)
             {
-                throw new ArgumentOutOfRangeException(nameof(word), $"Word must be {Size} characters long");
+                SetCell(i, index, word[i]);
             }
-            for (var i = 0; i < Size; ++i)
-            {
-                _rows[i] = _rows[i].Substring(0, index) + word[i] + _rows[i].Substring(index + 1, _rows.Length - index - 1);
-            }
-            _isUpToDate = false;
         }
 
         /// <summary>
@@ -157,7 +160,6 @@ namespace WordGrid
         /// <returns>A dictionary mapping the each non-empty character from its index at the given row.</returns>
         public IReadOnlyDictionary<int, char> GetRowConstraints(int index)
         {
-            UpdateProperties();
             return _rowConstraints[index];
         }
 
@@ -168,7 +170,6 @@ namespace WordGrid
         /// <returns>A dictionary mapping the each non-empty character from its index at the given column.</returns>
         public IReadOnlyDictionary<int, char> GetColumnConstraints(int index)
         {
-            UpdateProperties();
             return _columnConstraints[index];
         }
 
@@ -183,8 +184,45 @@ namespace WordGrid
             {
                 return false;
             }
-            UpdateProperties();
-            return _rows.Contains(word) || _columns.Contains(word);
+
+            for (var i = 0; i < Size; ++i)
+            {
+                // check each row for the given word
+                if (_chars[i, 0] == word[0])
+                {
+                    for (var j = 1; j < Size; ++j)
+                    {
+                        if (_chars[i, j] != word[j]) break;
+                        if (j == Size - 1) return true;
+                    }
+                }
+                // check each column for the given word
+                if (_chars[0, i] == word[0])
+                {
+                    for (var j = 1; j < Size; ++j)
+                    {
+                        if (_chars[j, i] != word[j]) break;
+                        if (j == Size - 1) return true;
+                    }
+                }
+            }
+            return false;
+        }
+
+        /// <summary>
+        /// Clear the board.
+        /// </summary>
+        public void Clear()
+        {
+            for (var i = 0; i < Size; ++i)
+            {
+                for (var j = 0; j < Size; ++j)
+                {
+                    _chars[i, j] = ' ';
+                }
+                _rowConstraints[i].Clear();
+                _columnConstraints[i].Clear();
+            }
         }
 
         /// <summary>
@@ -193,35 +231,19 @@ namespace WordGrid
         /// <returns>A string that represents the current object.</returns>
         public override string ToString()
         {
-            return string.Join(Environment.NewLine, _rows);
-        }
-
-        private void UpdateProperties()
-        {
-            if (_isUpToDate)
-            {
-                return;
-            }
-            _rowConstraints.ForEach(c => c.Clear());
-            _columnConstraints.ForEach(c => c.Clear());
+            var builder = new StringBuilder();
             for (var i = 0; i < Size; ++i)
             {
-                var builder = new StringBuilder();
                 for (var j = 0; j < Size; ++j)
                 {
-                    builder.Append(_rows[j][i]);
-                    if (_rows[i][j] != ' ')
-                    {
-                        _rowConstraints[i][j] = _rows[i][j];
-                    }
-                    if (_rows[j][i] != ' ')
-                    {
-                        _columnConstraints[i][j] = _rows[j][i];
-                    }
+                    builder.Append(_chars[i, j]);
                 }
-                _columns[i] = builder.ToString();
+                if (i < Size - 1)
+                {
+                    builder.AppendLine();
+                }
             }
-            _isUpToDate = true;
+            return builder.ToString();
         }
     }
 }
