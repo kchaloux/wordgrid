@@ -1,5 +1,5 @@
 ﻿using System;
-using System.Linq;
+using System.Diagnostics;
 
 namespace WordGrid
 {
@@ -7,17 +7,9 @@ namespace WordGrid
     {
         static void Main(string[] args)
         {
-            var solver = new Solver();
-            solver.Initialize(@"Resources/words.txt", 5);
+            var solver = new Solver(5);
+            solver.Load(@"Resources/words.txt");
             var board = new Board(solver.Size);
-            board.SetRow(2, "tepid");
-
-            foreach (var solution in solver.FindSolutions(board).Take(5))
-            {
-                Console.WriteLine(solution);
-                Console.WriteLine();
-            }
-
             Console.ReadLine();
         }
     }

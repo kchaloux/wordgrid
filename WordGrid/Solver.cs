@@ -17,25 +17,37 @@ namespace WordGrid
         /// <summary>
         /// Gets the size of the words that this solver uses.
         /// </summary>
-        public int Size { get; private set; }
+        public int Size { get; }
 
         /// <summary>
         /// Gets the total number of words loaded into this solver's word list.
         /// </summary>
         public int Count => _words.Count;
 
+        /// <summary>
+        /// Gets a list of all words currently loaded into the solver.
+        /// </summary>
+        public IReadOnlyList<string> Words => _words;
+
         private Prefix _root;
         private List<string> _words;
+
+        /// <summary>
+        /// Constructor.
+        /// </summary>
+        /// <param name="size">The length of the words to load into the solver.</param>
+        public Solver(int size)
+        {
+            Size = size;
+        }
 
         /// <summary>
         /// Load all words of the given size from the specified file into the solver.
         /// </summary>
         /// <param name="file">The file to load the words from.</param>
-        /// <param name="size">The length of the words to load into the solver.</param>
-        public void Initialize(string file, int size)
+        public void Load(string file)
         {
             _root = new Prefix();
-            Size = size;
             _words = new List<string>();
 
             using (var reader = File.OpenText(file))
@@ -44,7 +56,7 @@ namespace WordGrid
                 while ((line = reader.ReadLine()) != null)
                 {
                     var stripped = line.Trim().ToLowerInvariant();
-                    if (stripped.Length == size && stripped.All(c => c >= 'a' && c <= 'z'))
+                    if (stripped.Length == Size && stripped.All(c => c >= 'a' && c <= 'z'))
                     {
                         _words.Add(stripped);
                         var node = _root;
