@@ -7,7 +7,7 @@ using System.Text;
 using System.Threading.Tasks;
 using static System.Math;
 
-namespace WordGrid
+namespace WordGrid.Core
 {
     /// <summary>
     /// Finds solutions for boards from a given set of words.

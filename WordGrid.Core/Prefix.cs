@@ -4,7 +4,7 @@ using System.Linq;
 using System.Text;
 using static System.Math;
 
-namespace WordGrid
+namespace WordGrid.Core
 {
     /// <summary>
     /// A prefix tree node that represents a single character and each possible character that can occur after it.
