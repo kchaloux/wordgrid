@@ -63,20 +63,14 @@ namespace WordGrid.Core
         {
             Size = rows.Count;
             _chars = new char[Size, Size];
-            _rowConstraints = new Dictionary<int, char>[Size];
-            _columnConstraints = new Dictionary<int, char>[Size];
+            _rowConstraints = Enumerable.Range(0, Size).Select(_ => new Dictionary<int, char>()).ToArray();
+            _columnConstraints = Enumerable.Range(0, Size).Select(_ => new Dictionary<int, char>()).ToArray();
             for (var i = 0; i < Size; ++i)
             {
-                if (rows[i].Length != Size)
-                {
-                    throw new ArgumentOutOfRangeException(nameof(rows), "All rows and columns must be the same size");
-                }
                 for (var j = 0; j < Size; ++j)
                 {
-                    _chars[i, j] = rows[i][j];
+                    SetCell(i, j, rows[i][j]);
                 }
-                _rowConstraints[i] = new Dictionary<int, char>();
-                _columnConstraints[i] = new Dictionary<int, char>();
             }
         }
 
