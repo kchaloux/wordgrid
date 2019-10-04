@@ -10,7 +10,6 @@ abashed
 abate
 abated
 abates
-abbe
 abbess
 abbey
 abbeys
@@ -1070,6 +1069,7 @@ asters
 asthma
 astir
 astound
+astro
 astral
 astray
 astride
