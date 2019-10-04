@@ -1,17 +1,14 @@
-﻿<UserControl x:Class="WordGrid.Views.BoardView"
+<UserControl x:Class="WordGrid.Views.BoardView"
              xmlns="http://schemas.microsoft.com/winfx/2006/xaml/presentation"
              xmlns:x="http://schemas.microsoft.com/winfx/2006/xaml"
              xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006" 
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:WordGrid.ViewModels"
-             xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:mvvm="http://www.galasoft.ch/mvvmlight"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance viewModels:BoardViewModel, IsDesignTimeCreatable=False}">
     <UserControl.Resources>
         <Style TargetType="{x:Type ListViewItem}">
-            <Setter Property="Background" Value="Transparent"></Setter>
             <Setter Property="Template">
                 <Setter.Value>
                     <ControlTemplate TargetType="{x:Type ListViewItem}">
@@ -22,21 +19,12 @@
         </Style>
     </UserControl.Resources>
 
-    <ListView ItemsSource="{Binding Cells}"
-              SelectedIndex="{Binding SelectedCellIndex}"
-              BorderBrush="Transparent"
-              BorderThickness="0">
+    <ItemsControl ItemsSource="{Binding Cells}">
          <ItemsControl.ItemsPanel> 
              <ItemsPanelTemplate> 
-                 <UniformGrid Rows="{Binding DataContext.Size, RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"/> 
+                 <UniformGrid Rows="{Binding DataContext.Size,
+                                             RelativeSource={RelativeSource AncestorType={x:Type UserControl}}}"/> 
              </ItemsPanelTemplate> 
          </ItemsControl.ItemsPanel> 
-        <i:Interaction.Triggers>
-            
-            <i:EventTrigger EventName="PreviewKeyDown">
-                <mvvm:EventToCommand Command="{Binding PreviewKeyDownCommand}"
-                                     PassEventArgsToCommand="True"/>
-            </i:EventTrigger>
-        </i:Interaction.Triggers>
-    </ListView>
+    </ItemsControl>
 </UserControl>

@@ -1,4 +1,5 @@
-﻿using WordGrid.ViewModels;
+﻿using System.Windows.Input;
+using WordGrid.ViewModels;
 
 namespace WordGrid
 {
@@ -8,8 +9,10 @@ namespace WordGrid
         {
             InitializeComponent();
 
-            var solverViewModel = DataContext as SolverViewModel;
+            var solverViewModel = SolverView.DataContext as SolverViewModel;
             solverViewModel?.Initialize("./Resources/words.txt", 5);
+
+            FocusManager.SetFocusedElement(SolverView, SolverView.SizeSlider);
         }
     }
 }

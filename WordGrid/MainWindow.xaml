@@ -4,11 +4,13 @@
         xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
         xmlns:mc="http://schemas.openxmlformats.org/markup-compatibility/2006"
         xmlns:viewModels="clr-namespace:WordGrid.ViewModels"
+        xmlns:views="clr-namespace:WordGrid.Views"
         mc:Ignorable="d"
+        Focusable="False"
         Title="MainWindow" Height="450" Width="800">
     <Window.DataContext>
         <viewModels:SolverViewModel/>
     </Window.DataContext>
 
-    <ContentPresenter Content="{Binding .}"/>
+    <views:SolverView x:Name="SolverView"/>
 </Window>

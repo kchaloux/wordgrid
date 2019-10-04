@@ -5,30 +5,49 @@
              xmlns:d="http://schemas.microsoft.com/expression/blend/2008"
              xmlns:viewModels="clr-namespace:WordGrid.ViewModels"
              xmlns:i="http://schemas.microsoft.com/expression/2010/interactivity"
-             xmlns:mvvm="http://www.galasoft.ch/mvvmlight"
+             xmlns:behaviors="clr-namespace:WordGrid.Behaviors"
+             xmlns:views="clr-namespace:WordGrid.Views"
+             xmlns:command="http://www.galasoft.ch/mvvmlight"
              mc:Ignorable="d" 
              d:DesignHeight="450" d:DesignWidth="800"
              d:DataContext="{d:DesignInstance viewModels:SolverViewModel}"
              Background="Transparent">
+    <i:Interaction.Behaviors>
+        <behaviors:SelectionBehavior Items="{Binding Board.SelectedCells, Mode=OneWay}"/>
+    </i:Interaction.Behaviors>
     <i:Interaction.Triggers>
-        <i:EventTrigger EventName="PreviewMouseDown">
-            <mvvm:EventToCommand Command="{Binding PreviewMouseButtonDownCommand}"
-                                 PassEventArgsToCommand="True"/>
+        <i:EventTrigger EventName="PreviewKeyDown">
+            <command:EventToCommand Command="{Binding Board.PreviewKeyDownCommand}"
+                                    PassEventArgsToCommand="True"/>
         </i:EventTrigger>
     </i:Interaction.Triggers>
 
-    <Grid HorizontalAlignment="Center"
-          VerticalAlignment="Center">
+    <Grid>
         <Grid.RowDefinitions>
+            <RowDefinition Height="Auto"/>
             <RowDefinition Height="*"/>
             <RowDefinition Height="Auto"/>
         </Grid.RowDefinitions>
 
-        <ContentPresenter Grid.Row="0"
-                          Content="{Binding Board}" 
+        <Slider x:Name="SizeSlider"
+                Grid.Row="0"
+                Value="{Binding Size}"
+                Minimum="2"
+                Maximum="6"
+                Orientation="Horizontal"
+                HorizontalAlignment="Center"
+                VerticalAlignment="Top"
+                Width="360"
+                Margin="4"/>
+
+        <ContentPresenter Grid.Row="1"
+                          Content="{Binding Board}"
+                          HorizontalAlignment="Center"
+                          VerticalAlignment="Center"
+                          IsHitTestVisible="False"
                           Margin="2"/>
 
-        <StackPanel Grid.Row="1" 
+        <StackPanel Grid.Row="2" 
                     Orientation="Horizontal"
                     VerticalAlignment="Top"
                     HorizontalAlignment="Right"
@@ -40,5 +59,17 @@
                     Command="{Binding ClearBoardCommand}"
                     Margin="2"/>
         </StackPanel>
+
+        <Canvas x:Name="SelectionCanvas"
+                Grid.Row="0"
+                Grid.RowSpan="2">
+            <Rectangle Canvas.Left="{Binding Path=(behaviors:SelectionBehavior.X), RelativeSource={RelativeSource AncestorType={x:Type views:SolverView}}}"
+                       Canvas.Top="{Binding Path=(behaviors:SelectionBehavior.Y), RelativeSource={RelativeSource AncestorType={x:Type views:SolverView}}}"
+                       Width="{Binding Path=(behaviors:SelectionBehavior.Width), RelativeSource={RelativeSource AncestorType={x:Type views:SolverView}}}"
+                       Height="{Binding Path=(behaviors:SelectionBehavior.Height), RelativeSource={RelativeSource AncestorType={x:Type views:SolverView}}}"
+                       StrokeThickness="1"
+                       Opacity="0.75"
+                       Stroke="DodgerBlue"/>
+        </Canvas>
     </Grid>
 </UserControl>

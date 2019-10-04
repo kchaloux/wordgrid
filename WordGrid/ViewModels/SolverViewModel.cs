@@ -1,7 +1,5 @@
 ﻿using System.Linq;
-using System.Windows;
 using System.Windows.Input;
-using System.Windows.Media;
 using GalaSoft.MvvmLight.Command;
 using WordGrid.Core;
 
@@ -16,12 +14,24 @@ namespace WordGrid.ViewModels
         }
         private BoardViewModel _board;
 
-        public RelayCommand<MouseButtonEventArgs> PreviewMouseButtonDownCommand { get; }
+        public int Size
+        {
+            get => _board?.Size ?? 0;
+            set
+            {
+                if (_board != null && _board.Size != value)
+                {
+                    Initialize(Words, value);
+                    OnPropertyChanged(nameof(Size));
+                }
+            }
+        }
 
         public RelayCommand SolveBoardCommand { get; }
 
         public RelayCommand ClearBoardCommand { get; }
 
+        private const string Words = "./Resources/words.txt";
         private readonly Solver _solver;
 
         public SolverViewModel()
@@ -29,7 +39,6 @@ namespace WordGrid.ViewModels
             _solver = new Solver(0);
             Board = new BoardViewModel();
 
-            PreviewMouseButtonDownCommand = new RelayCommand<MouseButtonEventArgs>(OnPreviewMouseButtonDownExecuted);
             SolveBoardCommand = new RelayCommand(OnSolveBoardExecuted);
             ClearBoardCommand = new RelayCommand(OnClearBoardExecuted);
         }
@@ -39,20 +48,6 @@ namespace WordGrid.ViewModels
             _solver.Size = size;
             _solver.Load(file);
             Board.Load(new Board(size));
-        }
-
-        private void OnPreviewMouseButtonDownExecuted(MouseButtonEventArgs e)
-        {
-            var source = e.OriginalSource as DependencyObject;
-            while (source != null)
-            {
-                if ((source as FrameworkElement)?.DataContext == Board)
-                {
-                    return;
-                }
-                source = VisualTreeHelper.GetParent(source);
-            }
-            Board.SelectedCellIndex = -1;
         }
 
         private void OnSolveBoardExecuted()
