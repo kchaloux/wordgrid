@@ -15,9 +15,9 @@ namespace WordGrid.Core
     public class Solver : IEnumerable<string>
     {
         /// <summary>
-        /// Gets the size of the words that this solver uses.
+        /// Gets or Sets the size of the words that this solver uses.
         /// </summary>
-        public int Size { get; }
+        public int Size { get; set; }
 
         /// <summary>
         /// Gets the total number of words loaded into this solver's word list.
